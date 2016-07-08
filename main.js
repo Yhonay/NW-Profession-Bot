@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name Neverwinter gateway - Professions Robot
 // @description Automatically selects professions for empty slots
-// @namespace https://greasyfork.org/scripts/9812-neverwinter-gateway-professions-robot/
+// @namespace https://github.com/Yhonay/NW-Profession-Bot
 // @include http://gateway*.playneverwinter.com/*
 // @include https://gateway*.playneverwinter.com/*
 // @include http://gateway.*.perfectworld.eu/*
@@ -11,7 +11,7 @@
 // @originalAuthor Mustex/Bunta
 // @modifiedBy NW gateway Professions Bot Developers & Contributors
 
-// @version 4.9.9
+// @version 4.9.9-dkv2
 // @license http://creativecommons.org/licenses/by-nc-sa/3.0/us/
 // @grant GM_getValue
 // @grant GM_setValue
@@ -36,17 +36,18 @@ Developers & Contributors
 - Phr33d0m
 - Rotten_mind
 - WloBeb
+- Yhonay
 
 RELEASE NOTES:
-https://github.com/Phr33d0m/NW-Profession-Bot/blob/master/CHANGELOG.md
+https://github.com/Yhonay/NW-Profession-Bot/blob/master/CHANGELOG.md
 
  */
 
 // Make sure it's running on the main page, no frames
 
 
-var scriptVersion = 4.9;
-var forceResetOnVerBelow = 4.7;
+var scriptVersion = 4.992;
+var forceResetOnVerBelow = 4.9;
 var forceSettingsResetOnUpgrade = true;
 var microVersion = GM_info.script.version;
 
@@ -1791,9 +1792,9 @@ function addProfile(profession, profile, base){
         },
     });
 
-    definedTask["SummerEvent"] = {
-        taskListName: "SummerEvent",
-        taskName: "SummerEvent",
+    definedTask["Summerevent"] = {
+        taskListName: "Summerevent",
+        taskName: "Summerevent",
         taskDefaultPriority: 1,
         taskDefaultSlotNum: 0,
         taskActive: true,
@@ -1827,7 +1828,7 @@ function addProfile(profession, profile, base){
         definedTask["Blackice"],
         definedTask["Winterevent"],
         definedTask["SiegeEvent"],
-        definedTask["SummerEvent"],
+        definedTask["Summerevent"],
     ];
 
     var customProfiles = [];  // [ { taskName: 'name', baseProfile: 'profileName' / null, profile: JSON.parsed_from_input }, { } ....]
@@ -1878,7 +1879,7 @@ function addProfile(profession, profile, base){
             "Black Ice Shaping": { level: 0, workersUsed: [], workersUnused: [] },
         
         /*
-           "SummerEvent": { level: 0, workersUsed: [], workersUnused: [] },
+           "Summerevent": { level: 0, workersUsed: [], workersUnused: [] },
             "Winter Event":     { level: 0, workersUsed: [], workersUnused: [] },
             "Siege Event":      { level: 0, workersUsed: [], workersUnused: [] },
             */

@@ -21,7 +21,7 @@ Automatically selects professions for empty slots
 Tampermonkey will automatically (and by default) try to update the script once a day. By default it will use the *stable* release URL. If you want to switch to the bleeding edge development version instead see below.
 
 + Stable URL: [stable-version](https://greasyfork.org/scripts/9812-neverwinter-gateway-professions-robot/code/Neverwinter%20gateway%20-%20Professions%20Robot.user.js)
-+ Development URL: [development-version](https://rawgit.com/Phr33d0m/NW-Profession-Bot/master/main.js)
++ Development URL: [development-version](https://rawgit.com/Yhonay/NW-Profession-Bot/master/main.js)
 
 You can change the update by changing "Update URL" field in the edit window of the script in Tampermonkey.
 
