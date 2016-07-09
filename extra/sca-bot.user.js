@@ -1,13 +1,15 @@
 // ==UserScript==
 // @name sco-bot
 // @description
-// @namespace   https://github.com/AnnanFay
+// @namespace https://github.com/Yhonay/NW-Profession-Bot/extra
 // @include     http*://gateway.playneverwinter.com*
 // @version     1
 // @require     http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js
 // require     http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js
 // require     http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.js
 // @grant       none
+// @originalAuthor AnnanFay
+// @modifiedBy Yhonay
 // ==/UserScript==
 
 /* globals $, unsafeWindow, _, client */
@@ -107,7 +109,7 @@ try {
             if (side.sym === n.symbol) {
               var v = Math.min(side.count, n.requires) / die.sides.length;
               if (side.sym === 'c') {
-                v /= 2; // temp hack
+                v /= 4; // temp hack
               }
               score += v;
             }
@@ -127,7 +129,7 @@ try {
     }
 
     // bit better than random
-    function chooseDie(trials, allDice, discarding) {
+    function chooseDie(trials, allDice, discarding, canRoll) {
       var dice = validDice(allDice, discarding);
 
       dice = _.forEach(dice, function (die) {
@@ -138,6 +140,11 @@ try {
         dice = _.sortBy(dice, function (die) {
           return [1 / die.roll.count, die.value];
         });
+        if(((dice[0].color==="base" && dice[0].roll.symbol==="c" && dice[0].roll.count<3) ||
+           (dice[0].color!=="base" && dice[0].roll.symbol==="c" && dice[0].roll.count<6) ||
+           (dice[0].color!=="base" && dice[0].roll.symbol!=="c" && dice[0].roll.count<2)) && canRoll===true) {
+          return null;
+        }
       } else {
         // discard less useful
         dice = _.sortBy(dice, 'value');
@@ -150,7 +157,8 @@ try {
       var trials = gd.quest.encounter.challenge.trials;
       var allDice = gd.quest.roller.pile.dice;
 
-      var die = chooseDie(trials, allDice, discarding);
+      var die = chooseDie(trials, allDice, discarding, canRoll);
+      if( die === null ) client.scaRollDice();
 
       var d = client.dataModel.model.gatewaygamedata.quest.roller.pile.dice[die];
       var e = $(".dice.slot-" + die);
