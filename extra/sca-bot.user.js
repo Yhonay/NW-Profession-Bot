@@ -3,7 +3,7 @@
 // @description
 // @namespace https://github.com/Yhonay/NW-Profession-Bot
 // @include     http*://gateway.playneverwinter.com*
-// @version     2
+// @version     3
 // @require     http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js
 // require     http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js
 // require     http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.js
@@ -104,6 +104,7 @@ try {
       var score = 0;
       // ...refactor
       _(trials).forEach(function (t) {
+        if(t.complete===1) return; //continue
         _(t.needs).forEach(function (n) {
           _(die.sides).forEach(function (side) {
             if (side.sym === n.symbol) {
