@@ -3,7 +3,7 @@
 // @description
 // @namespace https://github.com/Yhonay/NW-Profession-Bot
 // @include     http*://gateway.playneverwinter.com*
-// @version     1
+// @version     2
 // @require     http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js
 // require     http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js
 // require     http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.js
@@ -119,6 +119,19 @@ try {
       return score;
     }
 
+    function dieNeed(trials, die) {
+      var needed = 1000;
+      _(trials).forEach(function (t) {
+        if(t.active===0) return; //continue
+        _(t.needs).forEach(function (n) {
+          if (die.symbol === n.symbol) {
+            needed = n.requires;
+          }
+        });
+      });
+      return needed;
+    }
+
     function validDice(dice, discarding) {
       //(!d.locked && (d.valid || discarding && !d.used))
       return _(dice)
@@ -141,8 +154,9 @@ try {
           return [1 / die.roll.count, die.value];
         });
         if(((dice[0].color==="base" && dice[0].roll.symbol==="c" && dice[0].roll.count<3) ||
-           (dice[0].color!=="base" && dice[0].roll.symbol==="c" && dice[0].roll.count<6) ||
-           (dice[0].color!=="base" && dice[0].roll.symbol!=="c" && dice[0].roll.count<2)) && canRoll===true) {
+            (dice[0].color!=="base" && dice[0].roll.symbol==="c" && dice[0].roll.count<6) ||
+            (dice[0].color!=="base" && dice[0].roll.symbol!=="c" && dice[0].roll.count<2)) &&
+           canRoll===true && dice[0].roll.count<dieNeed(trials, dice[0].roll)) {
           return null;
         }
       } else {
