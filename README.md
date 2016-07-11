@@ -13,14 +13,13 @@ Automatically selects professions for empty slots
 ### Installation
 1. Install/Use Google Chrome
 2. Install [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
-3. Install the script using our official GreasyFork page: [Neverwinter gateway - Professions Robot](https://greasyfork.org/en/scripts/9812-neverwinter-gateway-professions-robot)
+3. Install the script: [Neverwinter gateway - Professions Robot](https://rawgit.com/Yhonay/NW-Profession-Bot/master/main.js)
 4. ???
 5. PROFIT
 
 #### Updating
 Tampermonkey will automatically (and by default) try to update the script once a day. By default it will use the *stable* release URL. If you want to switch to the bleeding edge development version instead see below.
 
-+ Stable URL: [stable-version](https://greasyfork.org/scripts/9812-neverwinter-gateway-professions-robot/code/Neverwinter%20gateway%20-%20Professions%20Robot.user.js)
 + Development URL: [development-version](https://rawgit.com/Yhonay/NW-Profession-Bot/master/main.js)
 
 You can change the update by changing "Update URL" field in the edit window of the script in Tampermonkey.
