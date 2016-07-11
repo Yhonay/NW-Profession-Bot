@@ -11,7 +11,7 @@
 // @originalAuthor Mustex/Bunta
 // @modifiedBy NW gateway Professions Bot Developers & Contributors
 
-// @version 4.9.10-dkv3
+// @version 4.9.10-dkv4.4
 // @license http://creativecommons.org/licenses/by-nc-sa/3.0/us/
 // @grant GM_getValue
 // @grant GM_setValue
@@ -2561,7 +2561,8 @@ function addProfile(profession, profile, base){
         {scope: 'account', group: 'generalSettings', name: 'runSCA', title: tr('settings.general.runSCA'),               type: 'select',   pane: 'main', tooltip: tr('settings.general.runSCA.tooltip'),
             opts: [ { name: 'never',        value: 'never'},
                     { name: 'free time',    value: 'free'},
-                    { name: 'always',       value: 'always'}],
+                    { name: 'always',       value: 'always'},
+                    { name: 'stay there (for SCA bot)',       value: 'stay'}],
             },
         {scope: 'account', group: 'professionSettings', name: 'fillOptionals',         type: 'checkbox', pane: 'prof', title: tr('settings.profession.fillOptionals'),   tooltip: tr('settings.profession.fillOptionals.tooltip')},
         {scope: 'account', group: 'professionSettings', name: 'autoPurchaseRes',       type: 'checkbox', pane: 'prof', title: tr('settings.profession.autoPurchase'),    tooltip: tr('settings.profession.autoPurchase.tooltip')},
@@ -2620,7 +2621,8 @@ function addProfile(profession, profile, base){
         {scope: 'char', group: 'generalSettings', name: 'runSCA',    title: tr('settings.general.runSCA'),               type: 'select',   pane: 'main', tooltip: tr('settings.general.runSCA.tooltip'),
             opts: [ { name: 'never',        value: 'never'}, 
                     { name: 'free time',    value: 'free'}, 
-                    { name: 'always',       value: 'always'}],
+                    { name: 'always',       value: 'always'},
+                    { name: 'stay there (for SCA bot)',       value: 'stay'}],
             },        
         
         {scope: 'char', group: 'professionSettings', name: 'fillOptionals',         type: 'checkbox', pane: 'prof', title: tr('settings.profession.fillOptionals'),   tooltip: tr('settings.profession.fillOptionals.tooltip')},
@@ -2873,7 +2875,7 @@ function addProfile(profession, profile, base){
 
 
     // Running SCA for a single Char (based on CycleSCA)
-    function processCharSCA(charIdx) {
+    function processCharSCA(charIdx, stay) {
         var _hasLoginDaily = 0;
         var _scaHashMatch = /\/adventures$/;
         var _charName = charNamesList[charIdx];
@@ -2893,7 +2895,7 @@ function addProfile(profession, profile, base){
                 _hasLoginDaily = client.dataModel.model.gatewaygamedata.dailies.left.logins;
             } catch (e) {
                 window.setTimeout(function() {
-                    processCharSCA(charIdx);
+                    processCharSCA(charIdx, stay);
                 }, delay.SHORT);
                 return;
             }
@@ -2923,7 +2925,7 @@ function addProfile(profession, profile, base){
                     }
                 }
                 else chardelay = delay.SHORT;
-                if (chardelay > (delay.SHORT * 3)) unsafeWindow.location.hash = "#char(" + encodeURI(_fullCharName) + ")/professions";
+                if (chardelay > (delay.SHORT * 3) && stay!==true) unsafeWindow.location.hash = "#char(" + encodeURI(_fullCharName) + ")/professions";
                 console.log("Finished SCA check for " + charNamesList[charIdx] + " delay " + chardelay);
                 dfdNextRun.resolve(chardelay);
             });
@@ -4282,20 +4284,22 @@ function addProfile(profession, profile, base){
         
         GM_setValue("curCharNum_" + loggedAccount, curCharNum);
 
+        var sca_setting = getSetting('generalSettings','runSCA'); 
 
         var runSCAtime = !charStatisticsList[charNamesList[lastCharNum]].general.lastSCAVisit 
                       || ((charStatisticsList[charNamesList[lastCharNum]].general.lastSCAVisit + (1000*60*60*24)) < Date.now())
                       || (charStatisticsList[charNamesList[lastCharNum]].general.lastSCAVisit < accountSettings.generalSettings.SCADailyReset)
-                      || (charStatisticsList[charNamesList[lastCharNum]].general.lastSCAVisit < lastDailyResetTime.getTime());
-       
-        var sca_setting = getSetting('generalSettings','runSCA'); 
-        var runSCA = (runSCAtime && (sca_setting !== 'never'));
-        runSCA = runSCA && (sca_setting === 'always' || (sca_setting === 'free' && chardelay > 7000)); // More than 7 seconds for the next char swap
-        console.log("Check if need to run SCA for " + charNamesList[lastCharNum] + ":  " + sca_setting + " " + runSCAtime);                
+                      || (charStatisticsList[charNamesList[lastCharNum]].general.lastSCAVisit < lastDailyResetTime.getTime())
+                      || sca_setting==='stay';
         
+        var runSCA = (runSCAtime && (sca_setting !== 'never'));
+        runSCA = runSCA && (sca_setting === 'always' || (sca_setting === 'free' && chardelay > 7000) // More than 7 seconds for the next char swap
+                                                     || (sca_setting === 'stay' && chardelay > 30000));
+        console.log("Check if need to run SCA for " + charNamesList[lastCharNum] + ":  " + sca_setting + " " + runSCAtime);
+
         if (runSCA) {
             unsafeWindow.location.hash = unsafeWindow.location.hash.replace(/\)\/.+/, ')' + "/adventures");
-            processCharSCA(lastCharNum);
+            processCharSCA(lastCharNum, sca_setting==='stay');
             return;
         }
         dfdNextRun.resolve(chardelay);

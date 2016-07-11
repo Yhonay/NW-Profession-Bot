@@ -3,7 +3,7 @@
 // @description
 // @namespace https://github.com/Yhonay/NW-Profession-Bot
 // @include     http*://gateway.playneverwinter.com*
-// @version     5
+// @version     6
 // @require     http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js
 // require     http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js
 // require     http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.js
@@ -469,7 +469,7 @@ try {
 
       var args = Array.prototype.slice.call(arguments, 1);
       var state = args[0];
-      var passing = PAUSED || !(state in eventHandlers);
+      var passing = PAUSED || !(state in eventHandlers) || window.location.href.indexOf('/adventures') == -1;
 
       debug(2, 'scaProcessState', args, 'passing: ', passing);
 
