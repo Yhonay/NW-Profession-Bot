@@ -3,7 +3,7 @@
 // @description
 // @namespace https://github.com/Yhonay/NW-Profession-Bot
 // @include     http*://gateway.playneverwinter.com*
-// @version     4
+// @version     5
 // @require     http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js
 // require     http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js
 // require     http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.js
@@ -359,20 +359,7 @@ try {
     var encChoice = undefined;
     var eventHandlers = {
       k_ChooseQuest: function () {
-        var expires = client.dataModel.model.gatewaygamedata.invokestatus.invokeexpiretime;
-        var timeTill = new Date(expires) - new Date();
-        var hours12 = 12 * 60 * 60 * 1000;
-
-        if (timeTill < hours12) {
-          var level = 'i1'; // invoke quest
-        } else {
-          var level = 'd3'; // d1-d6
-
-          // temp hack
-          if (window.location.href.indexOf('annanfay') != -1) {
-            level = 'd2';
-          }
-        }
+        var level = 'd3';
 
         client.emitToProxy("Client_ScaSetQuest", {
           id: level
