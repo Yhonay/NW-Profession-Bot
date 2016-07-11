@@ -2740,7 +2740,6 @@ function addProfile(profession, profile, base){
 
     function processCharacter() {
         // Switch to professions page to show task progression
-        window.PAUSED=true;
         unsafeWindow.location.hash = "#char(" + encodeURI(unsafeWindow.client.getCurrentCharAtName()) + ")/professions";
 
         // Collect rewards for completed tasks and restart
@@ -2881,7 +2880,6 @@ function addProfile(profession, profile, base){
         var _scaHashMatch = /\/adventures$/;
         var _charName = charNamesList[charIdx];
         var _fullCharName = _charName + "@" + loggedAccount;
-        window.PAUSED=false;
        /*
        if (!scriptSettings.paused)
             PauseSettings("pause");
@@ -4551,7 +4549,6 @@ function addProfile(profession, profile, base){
     function loadCharacter(charname) {
         // Load character and restart next load loop
         console.log("Loading gateway script for", charname);
-        window.PAUSED=true;
         if (unsafeWindow.location.hash != "#char(" + encodeURI(charname) + ")/professions") {
             unsafeWindow.location.hash = "#char(" + encodeURI(charname) + ")/professions";
         }
@@ -5960,7 +5957,6 @@ function addProfile(profession, profile, base){
         $('#settings_sca').button();
         $("#settings_sca").click(function() {
             $("#settings_close").trigger("click");
-            window.PAUSED=false;
             unsafeWindow.location.hash = unsafeWindow.location.hash.replace(/\)\/.+/, ')' + "/adventures");
             processSwordCoastDailies();
         });
