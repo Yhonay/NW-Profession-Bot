@@ -11,7 +11,7 @@
 // @originalAuthor Mustex/Bunta
 // @modifiedBy NW gateway Professions Bot Developers & Contributors
 
-// @version 4.9.10-dkv2
+// @version 4.9.10-dkv3
 // @license http://creativecommons.org/licenses/by-nc-sa/3.0/us/
 // @grant GM_getValue
 // @grant GM_setValue
@@ -46,7 +46,7 @@ https://github.com/Yhonay/NW-Profession-Bot/blob/master/CHANGELOG.md
 // Make sure it's running on the main page, no frames
 
 
-var scriptVersion = 4.993;
+var scriptVersion = 4.994;
 var forceResetOnVerBelow = 4.9;
 var forceSettingsResetOnUpgrade = true;
 var microVersion = GM_info.script.version;
@@ -159,7 +159,11 @@ function _select_Gateway() { // Check for Gateway used to
 
     // Always disable SCA tutorial if its active
     $('#help-dimmer.help-cont.whenTutorialActive').waitUntilExists(function() {
-        client.toggleHelp();
+        client.stopHelp();
+        client.emitToProxy("Client_ScaSetTutorial", {
+            all: 1
+        });
+        client.dataModel.model.gatewaygamedata.tutorial.all = 1;
     });
 
     //MAC-NW
