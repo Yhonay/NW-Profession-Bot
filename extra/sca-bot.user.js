@@ -3,7 +3,7 @@
 // @description
 // @namespace https://github.com/Yhonay/NW-Profession-Bot
 // @include     http*://gateway.playneverwinter.com*
-// @version     7.1
+// @version     7.2
 // @require     http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js
 // require     http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js
 // require     http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.js
@@ -195,7 +195,10 @@ try {
       var allDice = gd.quest.roller.pile.dice;
 
       var die = chooseDie(trials, allDice, discarding, canRoll);
-      if( die === null ) client.scaRollDice();
+      if( die === null ) {
+        client.scaRollDice();
+        return;
+      }
 
       var d = client.dataModel.model.gatewaygamedata.quest.roller.pile.dice[die];
       var e = $(".dice.slot-" + die);
