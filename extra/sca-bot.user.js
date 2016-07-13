@@ -553,7 +553,7 @@ try {
     var lastAction = new Date();
 
     function sleeping() {
-      var dur = 60 * 1000; // 1min
+      var dur = 60 * 1000 * 2; // 2min
       var diff = (new Date() - lastAction);
       return diff > dur && window.location.href.indexOf('adventures') != -1;
     }
