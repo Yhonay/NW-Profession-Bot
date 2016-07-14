@@ -3,7 +3,7 @@
 // @description
 // @namespace https://github.com/Yhonay/NW-Profession-Bot
 // @include     http*://gateway.playneverwinter.com*
-// @version     7.4
+// @version     8
 // @require     http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js
 // require     http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js
 // require     http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.js
@@ -180,6 +180,20 @@ try {
     // bit better than random
     function chooseDie(trials, allDice, discarding, canRoll) {
       var dice = validDice(allDice, discarding);
+
+      //find best die of a type / discard others
+      for(var i=0, len=dice.length; i<len;i++){
+        if(dice.i===undefined) continue;
+        for(var j=0, len2=dice.length; j<len2;j++){
+          if(dice.j===undefined) continue;
+          if(dice.i.color==dice.j.color && dice.i.roll.symbol==dice.j.roll.symbol){
+            if(dice.i.roll.count<dice.j.roll.count) {
+              dice.splice(dice.i.id);
+            }
+          }
+        }
+      }
+      //end find best
 
       dice = _.forEach(dice, function (die) {
         die.value = dieValue(trials, die);
