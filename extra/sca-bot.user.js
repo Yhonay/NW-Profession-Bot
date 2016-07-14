@@ -3,7 +3,7 @@
 // @description
 // @namespace https://github.com/Yhonay/NW-Profession-Bot
 // @include     http*://gateway.playneverwinter.com*
-// @version     8
+// @version     9
 // @require     http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js
 // require     http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js
 // require     http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.js
@@ -104,6 +104,52 @@ try {
       return keys.sort(function(a,b){return obj[b]-obj[a];});
     }
 
+    function canFinish(trials, dice) {
+      var last = false;
+      var need = [];
+      need.p = 0;
+      need.t = 0;
+      need.m = 0;
+      need.c = 0;
+      var rolled = [];
+      rolled.p = 0;
+      rolled.t = 0;
+      rolled.m = 0;
+      rolled.c = 0;
+      rolled.w = 0;
+
+      _(trials).forEach(function (t) {
+        last = t.active===1 ? true : false; //we iterate through all of them, if last one is active it will stay true
+        _(t.needs).forEach(function (n) {
+          need[n.symbol] += n.requires;
+        });
+      });
+
+      if(!last) return false; //can't finish
+
+      _(dice).forEach(function (die) {
+        for (var i = 0, len = die.roll.symbol.length; i < len; i++) {
+          rolled[die.roll.symbol.charAt(i)] = (len>1 && die.roll.symbol.charAt(i)==c) ? 3 : die.roll.count; //make combat in multisides worth 3
+        }
+      });
+      need.p = Math.max(0, (need.p - rolled.p));
+      need.t = Math.max(0, (need.t - rolled.t));
+      need.m = Math.max(0, (need.m - rolled.m));
+      need.c = Math.max(0, (need.c - rolled.c));
+      for (var i = 0; i < rolled.w; i++){
+        var biggest = getSortedKeys(need)[0];
+        var wildcardWorth = 1;
+        if(biggest!=='c') wildcardWorth *= 2;
+        if(biggest==='c') wildcardWorth *= 6;
+        need[biggest] = Math.max(0, (need[biggest] - wildcardWorth));
+      }
+      if( (need.p+need.t+need.m+need.c)>0 ) {
+        return false;
+      } else {
+        return true;
+      }
+    }
+
     // Decision making code
     function dieValue(trials, die) {
       var score = 0;
@@ -155,6 +201,42 @@ try {
       return score / die.count;
     }
 
+    function diePower(trials, die) {
+      //immediate lock opening potential
+      var score = 0;
+      var need = [];
+      need.p = 0;
+      need.t = 0;
+      need.m = 0;
+      need.c = 0;
+      var rolled = [];
+      rolled.p = 0;
+      rolled.t = 0;
+      rolled.m = 0;
+      rolled.c = 0;
+
+      _(trials).forEach(function (t) {
+        if(t.active===0) return; //continue
+        _(t.needs).forEach(function (n) {
+          need[n.symbol] += n.requires;
+        });
+      });
+
+      for (var i = 0, len = die.roll.symbol.length; i < len; i++) {
+        if(die.roll.symbol.charAt(i)==='w'){
+          var order = { m: 0, p: 1, t: 2, c: 3 };
+          //get real dragon worth for most needed
+          rolled[getSortedKeys(need)[0]] = die.roll.vals[order[getSortedKeys(need)[0]]].count;
+        }else{
+          rolled[die.roll.symbol.charAt(i)] = (len>1 && die.roll.symbol.charAt(i)==c) ? 3 : die.roll.count; //make combat in multisides worth 3
+        }
+        if(need[die.roll.symbol.charAt(i)]>0){
+          score += Math.min(need[die.roll.symbol.charAt(i)], rolled[die.roll.symbol.charAt(i)])/need[die.roll.symbol.charAt(i)];
+        }
+      }
+      return score;
+    }
+
     function dieNeed(trials, die) {
       var needed = 1000;
       _(trials).forEach(function (t) {
@@ -181,29 +263,19 @@ try {
     function chooseDie(trials, allDice, discarding, canRoll) {
       var dice = validDice(allDice, discarding);
 
-      //find best die of a type / discard others
-      for(var i=0, len=dice.length; i<len;i++){
-        if(dice.i===undefined) continue;
-        for(var j=0, len2=dice.length; j<len2;j++){
-          if(dice.j===undefined) continue;
-          if(dice.i.color==dice.j.color && dice.i.roll.symbol==dice.j.roll.symbol){
-            if(dice.i.roll.count<dice.j.roll.count) {
-              dice.splice(dice.i.id);
-            }
-          }
-        }
-      }
-      //end find best
-
       dice = _.forEach(dice, function (die) {
         die.value = dieValue(trials, die);
+        die.power = diePower(trials, die);
       });
-      // use lowest value dice first
-      dice = dice = _.sortBy(dice, 'value');
+      // use biggest power first, then lowest value if tie
+      dice.sort(function (a, b) {
+        return b.power - a.power || a.value - b.value;
+      });
+
       if(((dice[0].color==="base" && dice[0].roll.symbol==="c" && dice[0].roll.count<3) ||
           (dice[0].color!=="base" && dice[0].roll.symbol==="c" && dice[0].roll.count<6) ||
           (dice[0].color!=="base" && dice[0].roll.symbol!=="c" && dice[0].roll.count<2)) &&
-         canRoll===true && dice[0].roll.count<dieNeed(trials, dice[0].roll)) {
+         canRoll===true && dice[0].roll.count<dieNeed(trials, dice[0].roll) && !canFinish(trials, dice)) {
         return null;
       }
       return dice[0].id;
