@@ -3,7 +3,7 @@
 // @description
 // @namespace https://github.com/Yhonay/NW-Profession-Bot
 // @include     http*://gateway.playneverwinter.com*
-// @version     7.2
+// @version     7.3
 // @require     http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js
 // require     http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js
 // require     http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.js
@@ -117,7 +117,6 @@ try {
       rolled.t = 0;
       rolled.m = 0;
       rolled.c = 0;
-      rolled.w = 0;
 
       _(trials).forEach(function (t) {
         _(t.needs).forEach(function (n) {
@@ -126,11 +125,17 @@ try {
       });
 
       for (var i = 0, len = die.roll.symbol.length; i < len; i++) {
-        rolled[die.roll.symbol.charAt(i)] = (len>1 && die.roll.symbol.charAt(i)==c) ? 3 : die.roll.count; //make combat in multisides worth 3
+        if(die.roll.symbol.charAt(i)==='w'){
+          var order = { m: 0, p: 1, t: 2, c: 3 };
+          //get real dragon worth for most needed
+          rolled[getSortedKeys(need)[0]] = die.roll.vals[order[getSortedKeys(need)[0]]].count;
+        }else{
+          rolled[die.roll.symbol.charAt(i)] = (len>1 && die.roll.symbol.charAt(i)==c) ? 3 : die.roll.count; //make combat in multisides worth 3
+        }
         //adjust score by locks taken out by die so we'll favor most effective die in case of a tie
-        score -= ( Math.min(need.p, rolled.p) + Math.min(need.t, rolled.t) + Math.min(need.m, rolled.m) + (Math.min(need.c, rolled.c) / 3) + Math.min(need[getSortedKeys(need)[0]], (rolled.w * 2)) ) / 100;
+        score -= ( Math.min(need.p, rolled.p) + Math.min(need.t, rolled.t) + Math.min(need.m, rolled.m) + (Math.min(need.c, rolled.c) / 3) ) / 100;
       }
-      need[getSortedKeys(need)[0]] -= (rolled.w * 2);
+
       need.p = Math.max(0, (need.p - rolled.p));
       need.t = Math.max(0, (need.t - rolled.t));
       need.m = Math.max(0, (need.m - rolled.m));
@@ -138,7 +143,8 @@ try {
 
       _(die.sides).forEach(function (side) {
         var symbol = side.sym === 'w' ? getSortedKeys(need)[0] : side.sym; //if wildcart calculate for most needed
-        var count = side.sym === 'w' ? 2 : side.count; //wildcards are worth 2 points
+        //wildcards can be worth 2 points but since we can not predict it, lets guestimate lowest posible outcome
+        var count = side.sym === 'w' && getSortedKeys(need)[0] === 'c' ? 3 : side.count;
         for (var i = 0, len = symbol.length; i < len; i++) {
           if(need[symbol.charAt(i)]!==0){
             count = (len>1 && symbol.charAt(i)==c) ? 3 : count; //make combat in multisides worth 3
@@ -182,7 +188,7 @@ try {
       dice = dice = _.sortBy(dice, 'value');
       if(((dice[0].color==="base" && dice[0].roll.symbol==="c" && dice[0].roll.count<3) ||
           (dice[0].color!=="base" && dice[0].roll.symbol==="c" && dice[0].roll.count<6) ||
-          (dice[0].color!=="base" && dice[0].roll.symbol!=="c" && dice[0].roll.symbol!=="w" && dice[0].roll.count<2)) &&
+          (dice[0].color!=="base" && dice[0].roll.symbol!=="c" && dice[0].roll.count<2)) &&
          canRoll===true && dice[0].roll.count<dieNeed(trials, dice[0].roll)) {
         return null;
       }
@@ -423,7 +429,7 @@ try {
             var companions = client.dataModel.model.gatewaygamedata.companions;
             var choice = _(companions).filter('valid').reject('selected').sortBy('stamina').last();
             client.scaAddPartyMember(choice.id, undefined);
-          })
+          });
         });
       },
       k_ConfirmTavernCompanions: function () {
@@ -533,7 +539,7 @@ try {
       try {
         eventHandlers[state]();
       } catch (e) {
-        debug(0, 'scaProcessStateWrapper error', e)
+        debug(0, 'scaProcessStateWrapper error', e);
         return f.apply(this, args);
       }
     }
