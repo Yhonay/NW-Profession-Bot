@@ -3,7 +3,7 @@
 // @description
 // @namespace https://github.com/Yhonay/NW-Profession-Bot
 // @include     http*://gateway.playneverwinter.com*
-// @version     7.3
+// @version     7.4
 // @require     http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js
 // require     http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js
 // require     http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.js
@@ -583,9 +583,9 @@ try {
       }
 
       debug(2, 'wrapped', wrapped);
-      setTimeout(function () {
+      //setTimeout(function () {
         client.scaProcessState = _.wrap(client.scaProcessState, scaProcessStateWrapper);
-      }, 2000);
+      //}, 2000);
 
       var bag = $('<div id="sco-bot"><div id="stats"></div><div id="reward-bag"></div></div>')
         .appendTo(document.body);
