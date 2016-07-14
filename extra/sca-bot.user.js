@@ -3,7 +3,7 @@
 // @description
 // @namespace https://github.com/Yhonay/NW-Profession-Bot
 // @include     http*://gateway.playneverwinter.com*
-// @version     6
+// @version     8
 // @require     http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js
 // require     http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js
 // require     http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.js
@@ -99,25 +99,60 @@ try {
       }
     }
 
+    function getSortedKeys(obj) {
+      var keys = []; for(var key in obj) keys.push(key);
+      return keys.sort(function(a,b){return obj[b]-obj[a];});
+    }
+
     // Decision making code
     function dieValue(trials, die) {
       var score = 0;
-      // ...refactor
+      var need = [];
+      need.p = 0;
+      need.t = 0;
+      need.m = 0;
+      need.c = 0;
+      var rolled = [];
+      rolled.p = 0;
+      rolled.t = 0;
+      rolled.m = 0;
+      rolled.c = 0;
+
       _(trials).forEach(function (t) {
-        if(t.complete===1) return; //continue
         _(t.needs).forEach(function (n) {
-          _(die.sides).forEach(function (side) {
-            if (side.sym === n.symbol) {
-              var v = Math.min(side.count, n.requires) / die.sides.length;
-              if (side.sym === 'c') {
-                v /= 4; // temp hack
-              }
-              score += v;
-            }
-          });
+          need[n.symbol] += n.requires;
         });
       });
-      return score;
+
+      for (var i = 0, len = die.roll.symbol.length; i < len; i++) {
+        if(die.roll.symbol.charAt(i)==='w'){
+          var order = { m: 0, p: 1, t: 2, c: 3 };
+          //get real dragon worth for most needed
+          rolled[getSortedKeys(need)[0]] = die.roll.vals[order[getSortedKeys(need)[0]]].count;
+        }else{
+          rolled[die.roll.symbol.charAt(i)] = (len>1 && die.roll.symbol.charAt(i)==c) ? 3 : die.roll.count; //make combat in multisides worth 3
+        }
+        //adjust score by locks taken out by die so we'll favor most effective die in case of a tie
+        score -= ( Math.min(need.p, rolled.p) + Math.min(need.t, rolled.t) + Math.min(need.m, rolled.m) + (Math.min(need.c, rolled.c) / 3) ) / 100;
+      }
+
+      need.p = Math.max(0, (need.p - rolled.p));
+      need.t = Math.max(0, (need.t - rolled.t));
+      need.m = Math.max(0, (need.m - rolled.m));
+      need.c = Math.max(0, (need.c - rolled.c));
+
+      _(die.sides).forEach(function (side) {
+        var symbol = side.sym === 'w' ? getSortedKeys(need)[0] : side.sym; //if wildcart calculate for most needed
+        //wildcards can be worth 2 points but since we can not predict it, lets guestimate lowest posible outcome
+        var count = side.sym === 'w' && getSortedKeys(need)[0] === 'c' ? 3 : side.count;
+        for (var i = 0, len = symbol.length; i < len; i++) {
+          if(need[symbol.charAt(i)]!==0){
+            count = (len>1 && symbol.charAt(i)==c) ? 3 : count; //make combat in multisides worth 3
+            score += Math.min(count, need[symbol.charAt(i)]) / need[symbol.charAt(i)];
+          }
+        }
+      });
+      return score / die.count;
     }
 
     function dieNeed(trials, die) {
@@ -146,23 +181,30 @@ try {
     function chooseDie(trials, allDice, discarding, canRoll) {
       var dice = validDice(allDice, discarding);
 
+      //find best die of a type / discard others
+      for(var i=0, len=dice.length; i<len;i++){
+        if(dice.i===undefined) continue;
+        for(var j=0, len2=dice.length; j<len2;j++){
+          if(dice.j===undefined) continue;
+          if(dice.i.color==dice.j.color && dice.i.roll.symbol==dice.j.roll.symbol){
+            if(dice.i.roll.count<dice.j.roll.count) {
+              dice.splice(dice.i.id);
+            }
+          }
+        }
+      }
+      //end find best
+
       dice = _.forEach(dice, function (die) {
         die.value = dieValue(trials, die);
       });
-      if (!discarding) {
-        // use high value dice first
-        dice = _.sortBy(dice, function (die) {
-          return [1 / die.roll.count, die.value];
-        });
-        if(((dice[0].color==="base" && dice[0].roll.symbol==="c" && dice[0].roll.count<3) ||
-            (dice[0].color!=="base" && dice[0].roll.symbol==="c" && dice[0].roll.count<6) ||
-            (dice[0].color!=="base" && dice[0].roll.symbol!=="c" && dice[0].roll.count<2)) &&
-           canRoll===true && dice[0].roll.count<dieNeed(trials, dice[0].roll)) {
-          return null;
-        }
-      } else {
-        // discard less useful
-        dice = _.sortBy(dice, 'value');
+      // use lowest value dice first
+      dice = dice = _.sortBy(dice, 'value');
+      if(((dice[0].color==="base" && dice[0].roll.symbol==="c" && dice[0].roll.count<3) ||
+          (dice[0].color!=="base" && dice[0].roll.symbol==="c" && dice[0].roll.count<6) ||
+          (dice[0].color!=="base" && dice[0].roll.symbol!=="c" && dice[0].roll.count<2)) &&
+         canRoll===true && dice[0].roll.count<dieNeed(trials, dice[0].roll)) {
+        return null;
       }
       return dice[0].id;
     }
@@ -173,7 +215,10 @@ try {
       var allDice = gd.quest.roller.pile.dice;
 
       var die = chooseDie(trials, allDice, discarding, canRoll);
-      if( die === null ) client.scaRollDice();
+      if( die === null ) {
+        client.scaRollDice();
+        return;
+      }
 
       var d = client.dataModel.model.gatewaygamedata.quest.roller.pile.dice[die];
       var e = $(".dice.slot-" + die);
@@ -201,7 +246,29 @@ try {
         var uiLink = $(".dice.slot-" + die);
         debug(1, 'COMBAT CHOICE', die, uiLink.offset(), uiLink);
         debug(1, 'CURRENT STATE', d, state);
-        client.scaChooseDie(die, uiLink.offset());
+
+        if(allDice[die].roll.symbol=='w'){
+          var need = [];
+          need.p = 0;
+          need.t = 0;
+          need.m = 0;
+          need.c = 0;
+          _(trials).forEach(function (t) {
+            if(t.active===0) return; //continue
+            _(t.needs).forEach(function (n) {
+              need[n.symbol] += n.requires;
+            });
+          });
+          var mostNeeded = getSortedKeys(need)[0];
+          var uiLinkW = '';
+          if(mostNeeded=='m') mostNeeded=0;
+          if(mostNeeded=='p') mostNeeded=1;
+          if(mostNeeded=='t') mostNeeded=2;
+          if(mostNeeded=='c') mostNeeded=3;
+          client.scaChooseDieWild(die, mostNeeded, uiLink.offset());
+        }else{
+          client.scaChooseDie(die, uiLink.offset());
+        }
       });
     }
 
@@ -376,7 +443,7 @@ try {
             var companions = client.dataModel.model.gatewaygamedata.companions;
             var choice = _(companions).filter('valid').reject('selected').sortBy('stamina').last();
             client.scaAddPartyMember(choice.id, undefined);
-          })
+          });
         });
       },
       k_ConfirmTavernCompanions: function () {
@@ -452,6 +519,8 @@ try {
           // }, 2000);
         } else {
           debug(2, 'cannot confirm');
+          client.scaConfirmEncounter('');
+          client.stopHelp();
           eventHandlers.k_ChooseEncounter();
         }
       },
@@ -484,7 +553,7 @@ try {
       try {
         eventHandlers[state]();
       } catch (e) {
-        debug(0, 'scaProcessStateWrapper error', e)
+        debug(0, 'scaProcessStateWrapper error', e);
         return f.apply(this, args);
       }
     }
@@ -528,9 +597,9 @@ try {
       }
 
       debug(2, 'wrapped', wrapped);
-      setTimeout(function () {
+      //setTimeout(function () {
         client.scaProcessState = _.wrap(client.scaProcessState, scaProcessStateWrapper);
-      }, 2000);
+      //}, 2000);
 
       var bag = $('<div id="sco-bot"><div id="stats"></div><div id="reward-bag"></div></div>')
         .appendTo(document.body);
@@ -551,7 +620,7 @@ try {
     var lastAction = new Date();
 
     function sleeping() {
-      var dur = 60 * 6 * 1000; // 6mins
+      var dur = 60 * 1000 * 2; // 2min
       var diff = (new Date() - lastAction);
       return diff > dur && window.location.href.indexOf('adventures') != -1;
     }
