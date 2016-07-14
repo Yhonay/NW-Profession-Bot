@@ -14,13 +14,20 @@ Automatically selects professions for empty slots
 1. Install/Use Google Chrome
 2. Install [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
 3. Install the script: [Neverwinter gateway - Professions Robot](https://rawgit.com/Yhonay/NW-Profession-Bot/master/main.js)
-4. ???
-5. PROFIT
+4. [optional] Install SCA bot [Neverwinter gateway - SCA Bot](https://github.com/Yhonay/NW-Profession-Bot/raw/master/extra/sca-bot.user.js)
+5. ???
+6. PROFIT
 
 #### Updating
 Tampermonkey will automatically (and by default) try to update the script once a day. By default it will use the *stable* release URL. If you want to switch to the bleeding edge development version instead see below.
 
-+ Development URL: [development-version](https://rawgit.com/Yhonay/NW-Profession-Bot/master/main.js)
+##### Stable URL:
++ [Neverwinter gateway - Professions Robot](https://rawgit.com/Yhonay/NW-Profession-Bot/master/main.js)
++ [Neverwinter gateway - SCA Bot](https://github.com/Yhonay/NW-Profession-Bot/raw/master/extra/sca-bot.user.js)
+
+##### Development URL: (breaks often!)
++ [Neverwinter gateway - Professions Robot](https://raw.githubusercontent.com/Yhonay/NW-Profession-Bot/indev/main.js)
++ [Neverwinter gateway - SCA Bot](https://github.com/Yhonay/NW-Profession-Bot/raw/indev/extra/sca-bot.user.js)
 
 You can change the update by changing "Update URL" field in the edit window of the script in Tampermonkey.
 
