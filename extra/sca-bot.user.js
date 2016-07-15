@@ -3,7 +3,7 @@
 // @description
 // @namespace https://github.com/Yhonay/NW-Profession-Bot
 // @include     http*://gateway.playneverwinter.com*
-// @version     9
+// @version     9.1
 // @require     http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js
 // require     http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js
 // require     http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.js
@@ -189,8 +189,8 @@ try {
 
       _(die.sides).forEach(function (side) {
         var symbol = side.sym === 'w' ? getSortedKeys(need)[0] : side.sym; //if wildcart calculate for most needed
-        //wildcards can be worth 2 points but since we can not predict it, lets guestimate lowest posible outcome
-        var count = side.sym === 'w' && getSortedKeys(need)[0] === 'c' ? 3 : side.count;
+        //wildcards can be worth 2 points so lets make it worth 1.5 points
+        var count = ( side.sym === 'w' && getSortedKeys(need)[0] === 'c' ? 3 : side.count ) * 1.5;
         for (var i = 0, len = symbol.length; i < len; i++) {
           if(need[symbol.charAt(i)]!==0){
             count = (len>1 && symbol.charAt(i)==c) ? 3 : count; //make combat in multisides worth 3
