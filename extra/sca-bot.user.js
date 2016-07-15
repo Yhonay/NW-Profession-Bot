@@ -3,7 +3,7 @@
 // @description
 // @namespace https://github.com/Yhonay/NW-Profession-Bot
 // @include     http*://gateway.playneverwinter.com*
-// @version     9.1
+// @version     9.2
 // @require     http://cdnjs.cloudflare.com/ajax/libs/lodash.js/2.4.1/lodash.js
 // require     http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js
 // require     http://cdnjs.cloudflare.com/ajax/libs/datatables/1.9.4/jquery.dataTables.js
@@ -129,7 +129,7 @@ try {
 
       _(dice).forEach(function (die) {
         for (var i = 0, len = die.roll.symbol.length; i < len; i++) {
-          rolled[die.roll.symbol.charAt(i)] = (len>1 && die.roll.symbol.charAt(i)==c) ? 3 : die.roll.count; //make combat in multisides worth 3
+          rolled[die.roll.symbol.charAt(i)] = (len>1 && die.roll.symbol.charAt(i)=="c") ? 3 : die.roll.count; //make combat in multisides worth 3
         }
       });
       need.p = Math.max(0, (need.p - rolled.p));
@@ -176,7 +176,7 @@ try {
           //get real dragon worth for most needed
           rolled[getSortedKeys(need)[0]] = die.roll.vals[order[getSortedKeys(need)[0]]].count;
         }else{
-          rolled[die.roll.symbol.charAt(i)] = (len>1 && die.roll.symbol.charAt(i)==c) ? 3 : die.roll.count; //make combat in multisides worth 3
+          rolled[die.roll.symbol.charAt(i)] = (len>1 && die.roll.symbol.charAt(i)=="c") ? 3 : die.roll.count; //make combat in multisides worth 3
         }
         //adjust score by locks taken out by die so we'll favor most effective die in case of a tie
         score -= ( Math.min(need.p, rolled.p) + Math.min(need.t, rolled.t) + Math.min(need.m, rolled.m) + (Math.min(need.c, rolled.c) / 3) ) / 100;
@@ -193,7 +193,7 @@ try {
         var count = ( side.sym === 'w' && getSortedKeys(need)[0] === 'c' ? 3 : side.count ) * 1.5;
         for (var i = 0, len = symbol.length; i < len; i++) {
           if(need[symbol.charAt(i)]!==0){
-            count = (len>1 && symbol.charAt(i)==c) ? 3 : count; //make combat in multisides worth 3
+            count = (len>1 && symbol.charAt(i)=="c") ? 3 : count; //make combat in multisides worth 3
             score += Math.min(count, need[symbol.charAt(i)]) / need[symbol.charAt(i)];
           }
         }
@@ -228,7 +228,7 @@ try {
           //get real dragon worth for most needed
           rolled[getSortedKeys(need)[0]] = die.roll.vals[order[getSortedKeys(need)[0]]].count;
         }else{
-          rolled[die.roll.symbol.charAt(i)] = (len>1 && die.roll.symbol.charAt(i)==c) ? 3 : die.roll.count; //make combat in multisides worth 3
+          rolled[die.roll.symbol.charAt(i)] = (len>1 && die.roll.symbol.charAt(i)=="c") ? 3 : die.roll.count; //make combat in multisides worth 3
         }
         if(need[die.roll.symbol.charAt(i)]>0){
           score += Math.min(need[die.roll.symbol.charAt(i)], rolled[die.roll.symbol.charAt(i)])/need[die.roll.symbol.charAt(i)];
